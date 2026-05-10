@@ -4,6 +4,7 @@ import cors from "cors";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import cookieParser from "cookie-parser";
+
 import authRoutes from "./routes/auth.routes.js";
 import { errorHandler } from "./middlewares/error.middleware.js";
 import jobRoutes from "./routes/job.routes.js";
@@ -13,6 +14,8 @@ import contentRoutes from "./routes/content.routes.js";
 
 const app = express();
 
+app.set("trust proxy", 1);
+
 const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(",") || [];
 const PORT = process.env.PORT || 5000;
 
@@ -20,13 +23,11 @@ const PORT = process.env.PORT || 5000;
    🔐 Security Middlewares
 ========================= */
 
-// Helmet (adds secure HTTP headers)
 app.use(helmet());
 
-// Rate Limiting (basic global limiter)
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per window
+  windowMs: 15 * 60 * 1000,
+  max: 100,
   standardHeaders: true,
   legacyHeaders: false,
 });
@@ -59,11 +60,10 @@ app.use(cookieParser());
    🚀 Routes
 ========================= */
 
-// Health check / API running check
 app.get("/", (req, res) => {
   res.status(200).json({
     success: true,
-    message: " El Shaddai Technologies API is running",
+    message: "El Shaddai Technologies API is running",
   });
 });
 
@@ -72,9 +72,11 @@ app.use("/api/jobs", jobRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/contacts", contactRoutes);
 app.use("/api/content", contentRoutes);
+
 /* =========================
    🛠️ Error Handling
 ========================= */
+
 app.use(errorHandler);
 
 app.listen(PORT, () => {
